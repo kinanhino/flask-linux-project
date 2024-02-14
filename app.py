@@ -1,3 +1,5 @@
+import os
+
 from flask import Flask, jsonify, render_template, request, redirect
 import paramiko
 import sqlite3
@@ -9,9 +11,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///site.db"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
+from dotenv import load_dotenv
+load_dotenv()
 
 class Disk(db.Model):
-    num = db.Column(db.Integer, nullable=False, primary_key=True)
+    disk_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dt = db.Column(db.DateTime, nullable=False)
     Filesystem = db.Column(db.String(50), nullable=False)
     Size = db.Column(db.String(10), nullable=False)
@@ -22,7 +26,8 @@ class Disk(db.Model):
 
 
 class Cpu(db.Model):
-    dt = db.Column(db.DateTime, nullable=False, primary_key=True)
+    cpu_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dt = db.Column(db.DateTime, nullable=False)
     us = db.Column(db.Float, nullable=False)
     sy = db.Column(db.Float, nullable=False)
     ni = db.Column(db.Float, nullable=False)
@@ -34,7 +39,8 @@ class Cpu(db.Model):
 
 
 class Mem(db.Model):
-    dt = db.Column(db.DateTime, nullable=False, primary_key=True)
+    mem_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dt = db.Column(db.DateTime, nullable=False)
     total = db.Column(db.Float, nullable=False)
     free = db.Column(db.Float, nullable=False)
     used = db.Column(db.Float, nullable=False)
@@ -42,7 +48,8 @@ class Mem(db.Model):
 
 
 class Swap(db.Model):
-    dt = db.Column(db.DateTime, nullable=False, primary_key=True)
+    swap_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    dt = db.Column(db.DateTime, nullable=False)
     total = db.Column(db.Float, nullable=False)
     free = db.Column(db.Float, nullable=False)
     used = db.Column(db.Float, nullable=False)
@@ -50,7 +57,7 @@ class Swap(db.Model):
 
 
 class Process(db.Model):
-    num = db.Column(db.Integer, nullable=False, primary_key=True)
+    proc_id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     dt = db.Column(db.DateTime, nullable=False)
     pid = db.Column(db.Integer, nullable=False)
     user = db.Column(db.String(50), nullable=False)
@@ -250,7 +257,10 @@ def monitoring():
     dt = datetime.now()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect('172.16.108.128', username='kinan', password='1827')
+    host = os.getenv('IP_ADDRESS')
+    username = os.getenv('USERNAME')
+    password = os.getenv('PASSWORD')
+    ssh.connect(host, username=username, password=password)
     cpu = get_cpu(ssh)
     disk_header, disk = get_disk(ssh)
     mem = get_mem(ssh)
