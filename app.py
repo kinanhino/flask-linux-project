@@ -10,6 +10,7 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
+
 class Cpu(db.Model):
     dt = db.Column(db.DateTime, nullable=False, primary_key=True)
     us = db.Column(db.Float, nullable=False)
