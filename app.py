@@ -39,7 +39,8 @@ class Swap(db.Model):
 
 
 class Process(db.Model):
-    dt = db.Column(db.DateTime, nullable=False, primary_key=True)
+    num = db.Column(db.Integer, nullable=False, primary_key=True)
+    dt = db.Column(db.DateTime, nullable=False)
     pid = db.Column(db.Integer, nullable=False)
     user = db.Column(db.String(50), nullable=False)
     cpu = db.Column(db.Float, nullable=False)
@@ -51,7 +52,7 @@ class Process(db.Model):
 def get_monitoring_data():
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect('172.16.108.128', username='kinan', password='1827')
+    ssh.connect('172.16.137.128', username='kali', password='kali')
     stdin, stdout, stderr = ssh.exec_command('top -b -n 1')
     top_data = stdout.read().decode().strip()
     top_data = top_data.split('\n')
@@ -86,7 +87,7 @@ def get_monitoring_data():
     proc = [] #list of dict of process
     for p in top_data[7:]:
         d = {}
-        d[top_data[6][0]] = int(p[0]) #pid
+        d[top_data[6][0]] = int(p[0]) #PID
         d[top_data[6][1]] = p[1] #USER
         d[top_data[6][7]] = p[7] #STAT
         d[top_data[6][8]] = float(p[8]) #%CPU
@@ -136,17 +137,18 @@ def add_swap(swap, date):
 
 def add_proc(proc, date):
     for p in proc:
-        if p["%CPU"]>0:
-            dt = date
-            pid = p["PID"]
-            user = p["USER"]
-            cpu = p["%CPU"]
-            mem = p["%MEM"]
-            state = p["S"]
-            command = p["COMMAND"]
-            p_obj = Process(dt=dt, pid=pid, user=user, cpu=cpu, mem=mem, state=state, command=command)
-            db.session.add(p_obj)
-            db.session.commit()
+        dt = date
+        pid = p["PID"]
+        user = p["USER"]
+        cpu = p["%CPU"]
+        mem = p["%MEM"]
+        state = p["S"]
+        command = p["COMMAND"]
+        p_obj = Process(dt=dt, pid=pid, user=user, cpu=cpu, mem=mem, state=state, command=command)
+        db.session.add(p_obj)
+        db.session.commit()
+
+
 
 
 
@@ -154,18 +156,49 @@ def add_proc(proc, date):
 def monitoring():
     try:
         cpu, mem, swap, proc, date = get_monitoring_data()
-
-        proc2 = [p for p in proc if p['%CPU']>0 ]
+        proc = [p for p in proc if p['%CPU']>0 or p['%MEM']>10]
+        add_cpu(cpu, date)
+        add_mem(mem, date)
+        add_swap(swap, date)
+        add_proc(proc, date)
     except:
-        monitoring()
+        cpu = Cpu.query.order_by(Cpu.dt.desc()).first()
+        mem = Mem.query.order_by(Mem.dt.desc()).first()
+        swap = Swap.query.order_by(Swap.dt.desc()).first()
+        proc = []
+        date = datetime.now()
+
     all_cpu = Cpu.query.all()
     all_mem = Mem.query.all()
     all_swap = Swap.query.all()
-    add_cpu(cpu, date)
-    add_mem(mem, date)
-    add_swap(swap, date)
-    add_proc(proc, date)
-    return render_template("homepage.html",cpu=cpu, mem=mem, swap=swap, proc=proc2, date=date, all_cpu=all_cpu, all_mem=all_mem, all_swap=all_swap)
+
+
+    return render_template("homepage.html",cpu=cpu, mem=mem, swap=swap, proc=proc, date=date, all_cpu=all_cpu, all_mem=all_mem, all_swap=all_swap)
+
+
+"""
+@app.route('/update-data')
+def update_data():
+    try:
+        cpu, mem, swap, proc, date = get_monitoring_data()
+        proc = [p for p in proc if p['%CPU'] > 0 or p['%MEM'] > 10]
+        add_cpu(cpu, date)
+        add_mem(mem, date)
+        add_swap(swap, date)
+        add_proc(proc, date)
+    except:
+        cpu = Cpu.query.order_by(Cpu.dt.desc()).first()
+        mem = Mem.query.order_by(Mem.dt.desc()).first()
+        swap = Swap.query.order_by(Swap.dt.desc()).first()
+        proc = []
+        date = datetime.now()
+
+    all_cpu = Cpu.query.all()
+    all_mem = Mem.query.all()
+    all_swap = Swap.query.all()
+
+    return jsonify(cpu=cpu, mem=mem, swap=swap, proc=proc, date=date)
+"""
 
 
 if __name__ == '__main__':

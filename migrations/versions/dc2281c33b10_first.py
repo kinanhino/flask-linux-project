@@ -1,8 +1,8 @@
-"""add command to porc migration
+"""first
 
-Revision ID: fcf76c1e2b85
+Revision ID: dc2281c33b10
 Revises: 
-Create Date: 2024-02-11 15:47:11.895114
+Create Date: 2024-02-13 10:07:02.293017
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'fcf76c1e2b85'
+revision = 'dc2281c33b10'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -39,6 +39,7 @@ def upgrade():
     sa.PrimaryKeyConstraint('dt')
     )
     op.create_table('process',
+    sa.Column('num', sa.Integer(), nullable=False),
     sa.Column('dt', sa.DateTime(), nullable=False),
     sa.Column('pid', sa.Integer(), nullable=False),
     sa.Column('user', sa.String(length=50), nullable=False),
@@ -46,7 +47,7 @@ def upgrade():
     sa.Column('mem', sa.Float(), nullable=False),
     sa.Column('state', sa.String(length=5), nullable=False),
     sa.Column('command', sa.String(length=50), nullable=False),
-    sa.PrimaryKeyConstraint('dt')
+    sa.PrimaryKeyConstraint('num')
     )
     op.create_table('swap',
     sa.Column('dt', sa.DateTime(), nullable=False),

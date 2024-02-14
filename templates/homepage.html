@@ -54,7 +54,7 @@
                                 <i class="fa fa-user fa-4x"></i>
                             </div>
                             <h6 class="text-uppercase">Total</h6>
-                            <h1 class="display-4">{{mem['total']}}</h1>
+                            <h1 class="display-4" id="mem_total">{{mem['total']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -65,7 +65,7 @@
                                 <i class="fa fa-list fa-4x"></i>
                             </div>
                             <h6 class="text-uppercase">Free</h6>
-                            <h1 class="display-4">{{mem['free']}}</h1>
+                            <h1 class="display-4" id="mem_free">{{mem['free']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -76,7 +76,7 @@
                                 <i class="fa fa-twitter fa-4x"></i>
                             </div>
                             <h6 class="text-uppercase">Used</h6>
-                            <h1 class="display-4">{{mem['used']}}</h1>
+                            <h1 class="display-4" id="mem_used">{{mem['used']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
                                 <i class="fa fa-share fa-4x"></i>
                             </div>
                             <h6 class="text-uppercase">Cache</h6>
-                            <h1 class="display-4">{{mem['cache']}}</h1>
+                            <h1 class="display-4" id="mem_cache">{{mem['cache']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
   var data = {
     labels: [
       {% for entry in all_mem %}
-        "{{ entry.date }}",
+        "{{ entry.dt }}",
       {% endfor %}
     ],
     datasets: [{
@@ -255,7 +255,7 @@ document.addEventListener("DOMContentLoaded", function() {
   var data = {
     labels: [
       {% for entry in all_cpu %}
-        "{{ entry.date }}",
+        "{{ entry.dt }}",
       {% endfor %}
     ],
     datasets: [{
@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <!-- end CPU graf -->
             <!-----------SWAP---------->
-            </h1>
+
             <p class="lead d-none d-sm-block">SWAP live data:</p>
 
 
@@ -354,7 +354,7 @@ document.addEventListener("DOMContentLoaded", function() {
   var data = {
     labels: [
       {% for entry in all_swap %}
-        "{{ entry.date }}",
+        "{{ entry.dt }}",
       {% endfor %}
     ],
     datasets: [{
@@ -398,6 +398,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 new features such as flexbox, 5 grid sizes (now including xl), cards, `em` sizing, CSS normalization (reboot) and larger font
                 sizes.
             </p>
+            <form>
+                <p>
+                    %CPU
+                </p>
+                <p>
+                    %MEM
+                </p>
+            </form>
+
             <div class="row my-4">
 
                 <div class="col-lg-9 col-md-8">
@@ -447,8 +456,9 @@ document.addEventListener("DOMContentLoaded", function() {
 </div>
 <!--/.container-->
 <footer class="container-fluid">
-    <p class="text-right small">©2016-2018 Company</p>
+    <p class="text-right small">©2024 Kaleidoo</p>
 </footer>
+
 
 
 
