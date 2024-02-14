@@ -63,6 +63,7 @@ class Process(db.Model):
 def get_cpu(ssh):
     stdin, stdout, stderr = ssh.exec_command('top -b -n 1 | grep Cpu')
     data = stdout.read().decode().strip().split()
+
     cpu = {
         "us": float(data[1]),
         "sy": float(data[3]),
@@ -92,17 +93,17 @@ def get_swap(ssh):
     stdin, stdout, stderr = ssh.exec_command('top -n 1 -b | grep  "MiB Swap"')
     data = stdout.read().decode().strip().split()
     swap = {
-        "total": float(data[3]),
-        "free": float(data[5]),
-        "used": float(data[7]),
-        "cache": float(data[9])
+        "total": float(data[2]),
+        "free": float(data[4]),
+        "used": float(data[6]),
+        "avail": float(data[8])
         }
     return swap
 
 
 def get_disk(ssh):
-    stdin, stdout, stderr = ssh.exec_command('df -h"')
-    data = stdout.read().decode().strip().split('/n')
+    stdin, stdout, stderr = ssh.exec_command('df -h')
+    data = stdout.read().decode().strip().split('\n')
     for i in range(len(data)):
         data[i] = data[i].split()
     disk_headers = data[0]
@@ -113,7 +114,8 @@ def get_disk(ssh):
             'Size': d[1],
             'Used': d[2],
             'Avail': d[3],
-            'Mounted_on': d[4]
+            'Use':d[4],
+            'Mounted_on': d[5]
         }
         disk_data.append(d_dict)
     return disk_headers, disk_data
@@ -127,14 +129,14 @@ def get_processes(ssh):
         top_data[i] = top_data[i].split()
     proc = []
     for p in top_data:
-        p = p.strip()
+        #p = list(str(p).strip())
         d = {
             'PID': p[0],
             'USER': p[1],
-            'S': p[8],
-            '%CPU': p[7],
-            '%MEM': p[8],
-            'COMMAND': p[10]
+            'S': p[7],
+            '%CPU': p[8],
+            '%MEM': p[9],
+            'COMMAND': p[11]
         }
         proc.append(d)
     return proc
@@ -171,7 +173,7 @@ def add_swap(swap, date):
     total = swap["total"]
     free = swap["free"]
     used = swap["used"]
-    available = swap["available"]
+    available = swap["avail"]
     swap_obj = Swap(dt=dt, total=total, free=free, used=used, available=available)
     db.session.add(swap_obj)
     db.session.commit()
@@ -191,16 +193,17 @@ def add_proc(proc, date):
         db.session.commit()
 
 
-def add_disk(disk, date):
+def add_disk(disks, date):
     dt = date
-    Filesystem = disk['Filesystem']
-    Size = disk['Size']
-    Used = disk["Used"]
-    Avail = disk["Avail"]
-    Use = disk["Use"]
-    Mounted_on = disk["Mounted_on"]
-    disk_obj = Disk(dt=dt, Filesystem=Filesystem, Size=Size, Use=Use, Used=Used, Avail=Avail, Mounted_on=Mounted_on)
-    db.session.add(disk_obj)
+    for disk in disks:
+        Filesystem = disk['Filesystem']
+        Size = disk['Size']
+        Used = disk["Used"]
+        Avail = disk["Avail"]
+        Use = disk["Use"]
+        Mounted_on = disk["Mounted_on"]
+        disk_obj = Disk(dt=dt, Filesystem=Filesystem, Size=Size, Use=Use, Used=Used, Avail=Avail, Mounted_on=Mounted_on)
+        db.session.add(disk_obj)
     db.session.commit()
 
 
@@ -214,21 +217,26 @@ def show_cpu():
 @app.route('/mem')
 def show_mem():
     dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
-    all_mem = Cpu.query.order_by(Mem.dt.desc()).limit(20).all()
+    all_mem = Mem.query.order_by(Mem.dt.desc()).limit(20).all()
     return render_template('mem.html', mem=mem, all_mem=all_mem)
 
 
 @app.route('/swap')
 def show_swap():
     dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
-    all_Swap = Cpu.query.order_by(Swap.dt.desc()).limit(20).all()
-    return render_template('swap.html', swap=swap, all_Swap=all_Swap)
+    all_swap = Swap.query.order_by(Swap.dt.desc()).limit(20).all()
+    return render_template('swap.html', swap=swap, all_swap=all_swap)
 
 
 @app.route('/disk')
 def show_disk():
     dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
-    all_disk = Cpu.query.order_by(Disk.dt.desc()).limit(20).all()
+    all_disk = Disk.query.order_by(Disk.dt.desc()).limit(20).all()
+    print(disk_header)
+    print()
+    print(disk)
+    print()
+    print(all_disk)
     return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
 
 
@@ -242,15 +250,14 @@ def monitoring():
     dt = datetime.now()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    ssh.connect('172.16.137.128', username='kali', password='kali')
+    ssh.connect('172.16.108.128', username='kinan', password='1827')
     cpu = get_cpu(ssh)
     disk_header, disk = get_disk(ssh)
     mem = get_mem(ssh)
     swap = get_swap(ssh)
     proc = get_processes(ssh)
     ssh.close()
-
-    proc = [p for p in proc if p['%CPU'] > 0 or p["%MEM"] > 10]
+    proc = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 10]
 
     add_disk(disk, dt)
     add_mem(mem, dt)
@@ -263,7 +270,7 @@ def monitoring():
 
 @app.route('/')
 def base():
-    render_template('base.html')
+    return render_template('base.html')
 
 
 if __name__ == '__main__':
