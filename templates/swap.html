@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block head %}
+SWAP Monitoring
+{% endblock %}
+{% block content %}
+<div class="row">
+    <h2>SWAP Usage</h2>
+                <!-----------SWAP---------->
+
+            <p class="lead d-none d-sm-block">SWAP live data:</p>
+
+
+            <div class="row mb-3">
+                <div class="col-xl-3 col-sm-6 py-2">
+                    <div class="card bg-success text-white h-100">
+                        <div class="card-body bg-success">
+                            <div class="rotate">
+                                <i class="fa fa-user fa-4x"></i>
+                            </div>
+                            <h6 class="text-uppercase">Total</h6>
+                            <h1 class="display-4">{{swap['total']}}</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 py-2">
+                    <div class="card text-white bg-danger h-100">
+                        <div class="card-body bg-danger">
+                            <div class="rotate">
+                                <i class="fa fa-list fa-4x"></i>
+                            </div>
+                            <h6 class="text-uppercase">Free</h6>
+                            <h1 class="display-4">{{swap['free']}}</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 py-2">
+                    <div class="card text-white bg-info h-100">
+                        <div class="card-body bg-info">
+                            <div class="rotate">
+                                <i class="fa fa-twitter fa-4x"></i>
+                            </div>
+                            <h6 class="text-uppercase">Used</h6>
+                            <h1 class="display-4">{{swap['used']}}</h1>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-sm-6 py-2">
+                    <div class="card text-white bg-warning h-100">
+                        <div class="card-body">
+                            <div class="rotate">
+                                <i class="fa fa-share fa-4x"></i>
+                            </div>
+                            <h6 class="text-uppercase">Available</h6>
+                            <h1 class="display-4">{{swap['available']}}</h1>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            </div>
+
+<!-- SWAP graf -->
+
+
+<div class="chart-container">
+    <canvas id="myChart3"></canvas>
+  </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="script.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // Sample data for the chart
+  var data = {
+    labels: [
+      {% for entry in all_swap %}
+        "{{ entry.dt }}",
+      {% endfor %}
+    ],
+    datasets: [{
+      label: "SWAP usage",
+      data: [
+        {% for entry in all_swap %}
+          {{ entry.used }},
+        {% endfor %}
+      ],
+      fill: false,
+      borderColor: "rgb(75, 192, 192)",
+      tension: 0.1
+    }]
+};
+
+  // Get the canvas element
+  var ctx = document.getElementById("myChart3").getContext("2d");
+
+  // Create the chart
+  var myChart = new Chart(ctx, {
+    type: "line",
+    data: data
+  });
+});
+</script>
+
+
+<!-- end SWAP graf -->
+</div>
+{% endblock %}
