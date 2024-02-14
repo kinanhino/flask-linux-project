@@ -168,9 +168,9 @@ def monitoring():
         proc = []
         date = datetime.now()
 
-    all_cpu = Cpu.query.all()
-    all_mem = Mem.query.all()
-    all_swap = Swap.query.all()
+    all_cpu = Cpu.query.order_by(Cpu.dt.desc()).limit(20).all()
+    all_mem = Mem.query.order_by(Mem.dt.desc()).limit(20).all()
+    all_swap = Swap.query.order_by(Swap.dt.desc()).limit(20).all()
 
 
     return render_template("homepage.html",cpu=cpu, mem=mem, swap=swap, proc=proc, date=date, all_cpu=all_cpu, all_mem=all_mem, all_swap=all_swap)
