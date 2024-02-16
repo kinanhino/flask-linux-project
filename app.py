@@ -69,18 +69,22 @@ class Process(db.Model):
 
 def get_cpu(ssh):
     stdin, stdout, stderr = ssh.exec_command('top -b -n 1 | grep Cpu')
-    data = stdout.read().decode().strip().split()
-
+    data = stdout.read().decode().strip().split(",")
+    print(data)
+    data[0]= data[0].split()[1]
+    for i in range(1,len(data)):
+        data[i] = data[i].split()[0]
     cpu = {
-        "us": float(data[1]),
-        "sy": float(data[3]),
-        "ni": float(data[5]),
-        "id": float(data[7]),
-        "wa": float(data[9]),
-        "hi": float(data[11]),
-        "si": float(data[13]),
-        "st": float(data[15])
+        "us": float(data[0]),
+        "sy": float(data[1]),
+        "ni": float(data[2]),
+        "id": float(data[3]),
+        "wa": float(data[4]),
+        "hi": float(data[5]),
+        "si": float(data[6]),
+        "st": float(data[7])
         }
+
     return cpu
 
 
@@ -228,6 +232,18 @@ def show_mem():
     return render_template('mem.html', mem=mem, all_mem=all_mem)
 
 
+@app.route('/refresh_mem')
+def refresh_mem():
+    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    all_mem = [mem_obj.__dict__ for mem_obj in Mem.query.order_by(Mem.dt.desc()).limit(20).all()]
+    all_mem = all_mem[::-1]
+    for mem_data in all_mem:
+        mem_data.pop('_sa_instance_state', None)
+    return jsonify({
+        "mem": mem,
+        "all_mem": all_mem
+    })
+
 @app.route('/swap')
 def show_swap():
     dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
@@ -245,6 +261,12 @@ def show_disk():
     print()
     print(all_disk)
     return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
+
+
+@app.route('/refresh_process')
+def refresh_process():
+    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    return jsonify(proc)
 
 
 @app.route('/process')
