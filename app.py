@@ -131,7 +131,7 @@ def get_disk(ssh):
     return disk_headers, disk_data
 
 
-def get_processes(ssh):
+def get_processes(ssh, date):
     stdin, stdout, stderr = ssh.exec_command("top -n1 -b | grep -E '^\s*[0-9]+|^\s*%CPU'")
     top_data = stdout.read().decode().strip()
     top_data = top_data.split('\n')
@@ -146,7 +146,8 @@ def get_processes(ssh):
             'S': p[7],
             '%CPU': p[8],
             '%MEM': p[9],
-            'COMMAND': p[11]
+            'COMMAND': p[11],
+            'dt': date.strftime('%Y-%m-%d %H:%M:%S')
         }
         proc.append(d)
     return proc
@@ -309,7 +310,7 @@ def monitoring(info):
     disk_header, disk = get_disk(ssh)
     mem = get_mem(ssh)
     swap = get_swap(ssh)
-    proc = get_processes(ssh)
+    proc = get_processes(ssh, dt)
     ssh.close()
     proc = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 10]
 
