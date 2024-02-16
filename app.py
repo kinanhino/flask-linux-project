@@ -70,7 +70,6 @@ class Process(db.Model):
 def get_cpu(ssh):
     stdin, stdout, stderr = ssh.exec_command('top -b -n 1 | grep Cpu')
     data = stdout.read().decode().strip().split(",")
-    print(data)
     data[0]= data[0].split()[1]
     for i in range(1,len(data)):
         data[i] = data[i].split()[0]
@@ -220,21 +219,32 @@ def add_disk(disks, date):
 
 @app.route('/cpu')
 def show_cpu():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    cpu = monitoring("cpu")
     all_cpu = Cpu.query.order_by(Cpu.dt.desc()).limit(20).all()
     return render_template('cpu.html', cpu=cpu, all_cpu=all_cpu)
 
+@app.route('/refresh_cpu')
+def refresh_cpu():
+    cpu = monitoring("cpu")
+    all_cpu = [cpu_obj.__dict__ for cpu_obj in Cpu.query.order_by(Cpu.dt.desc()).limit(20).all()]
+    all_cpu = all_cpu[::-1]
+    for cpu_data in all_cpu:
+        cpu_data.pop('_sa_instance_state', None)
+    return jsonify({
+        "cpu": cpu,
+        "all_cpu": all_cpu
+    })
 
 @app.route('/mem')
 def show_mem():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    mem = monitoring("mem")
     all_mem = Mem.query.order_by(Mem.dt.desc()).limit(20).all()
     return render_template('mem.html', mem=mem, all_mem=all_mem)
 
 
 @app.route('/refresh_mem')
 def refresh_mem():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    mem = monitoring("mem")
     all_mem = [mem_obj.__dict__ for mem_obj in Mem.query.order_by(Mem.dt.desc()).limit(20).all()]
     all_mem = all_mem[::-1]
     for mem_data in all_mem:
@@ -246,14 +256,26 @@ def refresh_mem():
 
 @app.route('/swap')
 def show_swap():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    swap = monitoring("swap")
     all_swap = Swap.query.order_by(Swap.dt.desc()).limit(20).all()
     return render_template('swap.html', swap=swap, all_swap=all_swap)
+
+@app.route('/refresh_swap')
+def refresh_swap():
+    swap = monitoring("swap")
+    all_swap = [swap_obj.__dict__ for swap_obj in Swap.query.order_by(Swap.dt.desc()).limit(20).all()]
+    all_swap = all_swap[::-1]
+    for swap_data in all_swap:
+        swap_data.pop('_sa_instance_state', None)
+    return jsonify({
+        "swap": swap,
+        "all_swap": all_swap
+    })
 
 
 @app.route('/disk')
 def show_disk():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    disk_header, disk = monitoring("disk")
     all_disk = Disk.query.order_by(Disk.dt.desc()).limit(20).all()
     print(disk_header)
     print()
@@ -265,17 +287,17 @@ def show_disk():
 
 @app.route('/refresh_process')
 def refresh_process():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    proc = monitoring("proc")
     return jsonify(proc)
 
 
 @app.route('/process')
 def show_process():
-    dt, cpu, mem, swap, proc, disk_header, disk = monitoring()
+    proc = monitoring("proc")
     return render_template('process.html', proc=proc)
 
 
-def monitoring():
+def monitoring(info):
     dt = datetime.now()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -297,8 +319,17 @@ def monitoring():
     add_cpu(cpu, dt)
     add_proc(proc, dt)
     
-    return dt, cpu, mem, swap, proc, disk_header, disk
-
+    #return dt, cpu, mem, swap, proc, disk_header, disk
+    if info == "cpu":
+        return cpu
+    elif info == "mem":
+        return mem
+    elif info == "swap":
+        return swap
+    elif info == "disk":
+        return disk_header, disk
+    elif info == "proc":
+        return proc
 
 @app.route('/')
 def base():
