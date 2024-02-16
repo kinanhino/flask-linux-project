@@ -1,11 +1,9 @@
 body, html {
   height:100%;
+  margin: 0;
+
 }
 
-/*
- * Off Canvas sidebar at medium breakpoint
- * --------------------------------------------------
- */
 @media screen and (max-width: 992px) {
 
   .row-offcanvas {
@@ -84,4 +82,25 @@ body, html {
   width: 32vw;
   height: auto;
   padding: 20px;
+}
+
+.page-content {
+    min-height: 100%;
+    /* Use padding-bottom to push the footer down but ensure it's the same height as the footer */
+    padding-bottom: 60px; /* Adjust this value based on the footer's height */
+    box-sizing: border-box; /* Ensures padding does not add to the total height */
+}
+
+/* Sticky footer styles */
+footer {
+    position: fixed; /* Fixed positioning to "stick" it at the bottom */
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 5%;
+    background-color: rgba(53, 135, 243, 1);
+    color: #fff;
+    text-align: center;
+    padding: 10px 0; /* Some padding */
+    border-radius: 20px 20px 0 0; /* Rounded corners at the top */
 }

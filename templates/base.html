@@ -5,44 +5,44 @@
     <title>{% block head %}
     Monitor Linux
         {% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <!-- Additional head content can go here -->
 </head>
 <body>
+<div class="page-content">
+    <nav class="navbar fixed-top navbar-expand-md navbar-dark bg-primary mb-3">
+        <div class="flex-row d-flex">
+            <a class="navbar-brand" href="/">Monitor Linux</a>
+        </div>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item"><a class="nav-link" href="/mem">Memory</a></li>
+                <li class="nav-item"><a class="nav-link" href="/cpu">CPU</a></li>
+                <li class="nav-item"><a class="nav-link" href="/swap">Swap</a></li>
+                <li class="nav-item"><a class="nav-link" href="/process">Process</a></li>
+                <li class="nav-item"><a class="nav-link" href="/disk">Disk Space</a></li>
+            </ul>
+        </div>
+    </nav>
 
-<nav class="navbar fixed-top navbar-expand-md navbar-dark bg-primary mb-3">
-    <div class="flex-row d-flex">
-        <a class="navbar-brand" href="/">Monitor Linux</a>
+    <div class="container" style="padding-top: 60px;">
+            {% block content %}
+            <h1 class="display-4 d-none d-sm-block">
+                    Linux Monitoring Dashboard
+                    </h1>
+            <h2>Welcome to the Linux Monitoring System</h2>
+            <h3>This application demonstrate the usage of you linux machine</h3>
+            <p>You can navigate between each of the metrics to check what the hell is going on with it</p>
+            {% endblock %}
     </div>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarContent">
-        <ul class="navbar-nav mr-auto">
-            <li class="nav-item"><a class="nav-link" href="/mem">Memory</a></li>
-            <li class="nav-item"><a class="nav-link" href="/cpu">CPU</a></li>
-            <li class="nav-item"><a class="nav-link" href="/swap">Swap</a></li>
-            <li class="nav-item"><a class="nav-link" href="/process">Process</a></li>
-            <li class="nav-item"><a class="nav-link" href="/disk">Disk Space</a></li>
-        </ul>
-    </div>
-</nav>
-
-<div class="container" style="padding-top: 60px;">
-    {% block content %}
-    <h1 class="display-4 d-none d-sm-block">
-            Linux Monitoring Dashboard
-            </h1>
-    <h2>Welcome to the Linux Monitoring System</h2>
-    <h3>This application demonstrate the usage of you linux machine</h3>
-    <p>You can navigate between each of the metrics to check what the hell is going on with it</p>
-    {% endblock %}
 </div>
-
-<footer class="container-fluid">
-    <p class="text-right small">©2024 Kaleidoo</p>
-</footer>
-
+    <footer class="container-fluid text-center">
+        <p>©2024 Kaleidoo</p>
+    </footer>
 </body>
 </html>
