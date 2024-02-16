@@ -18,8 +18,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-user fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">us</h6>
-                            <h1 class="display-4">{{cpu['us']}}</h1>
+                            <h6 class="text-uppercase">User %</h6>
+                            <h1 class="display-4" id="cpu_us">{{cpu['us']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -29,8 +29,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-list fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">sy</h6>
-                            <h1 class="display-4">{{cpu['sy']}}</h1>
+                            <h6 class="text-uppercase">System %</h6>
+                            <h1 class="display-4" id="cpu_sy">{{cpu['sy']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -40,8 +40,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-twitter fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">ni</h6>
-                            <h1 class="display-4">{{cpu['ni']}}</h1>
+                            <h6 class="text-uppercase">Nice %</h6>
+                            <h1 class="display-4" id="cpu_ni">{{cpu['ni']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -51,8 +51,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-share fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">id</h6>
-                            <h1 class="display-4">{{cpu['id']}}</h1>
+                            <h6 class="text-uppercase">Idle %</h6>
+                            <h1 class="display-4" id="cpu_id">{{cpu['id']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -65,8 +65,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-user fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">wa</h6>
-                            <h1 class="display-4">{{cpu['wa']}}</h1>
+                            <h6 class="text-uppercase">I/O Wait %</h6>
+                            <h1 class="display-4" id="cpu_wa">{{cpu['wa']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -76,8 +76,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-list fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">hi</h6>
-                            <h1 class="display-4">{{cpu['hi']}}</h1>
+                            <h6 class="text-uppercase">H/W Interrupt %</h6>
+                            <h1 class="display-4" id="cpu_hi">{{cpu['hi']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -87,8 +87,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-twitter fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">si</h6>
-                            <h1 class="display-4">{{cpu['si']}}</h1>
+                            <h6 class="text-uppercase">S/W Interrupt %</h6>
+                            <h1 class="display-4" id="cpu_si">{{cpu['si']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -98,8 +98,8 @@ CPU Monitoring
                             <div class="rotate">
                                 <i class="fa fa-share fa-4x"></i>
                             </div>
-                            <h6 class="text-uppercase">st</h6>
-                            <h1 class="display-4">{{cpu['st']}}</h1>
+                            <h6 class="text-uppercase">Steal %</h6>
+                            <h1 class="display-4" id="cpu_st">{{cpu['st']}}</h1>
                         </div>
                     </div>
                 </div>
@@ -107,49 +107,90 @@ CPU Monitoring
             <!--/row-->
 <!-- CPU graf -->
 
+<!-- Include Chart.js and jQuery -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <div class="chart-container">
-    <canvas id="myChart2"></canvas>
-  </div>
+    <canvas id="myChart"></canvas>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!---<script src="script.js"></script>---->
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  // Sample data for the chart
-  var data = {
-    labels: [
-      {% for entry in all_cpu %}
-        "{{ entry.dt }}",
-      {% endfor %}
-    ],
-    datasets: [{
-      label: "CPU usage",
-      data: [
-        {% for entry in all_cpu %}
-          {{ entry.us }},
-        {% endfor %}
-      ],
-      fill: false,
-      borderColor: "rgb(75, 192, 192)",
-      tension: 0.1
-    }]
-};
+    var myChart; // Declare myChart in the global scope
 
-  // Get the canvas element
-  var ctx = document.getElementById("myChart2").getContext("2d");
+    // Function to update the chart with data
+    function updateChart(data) {
+        // Update chart data
+        myChart.data.labels = data.all_cpu.map(function (entry) {
+            return entry.dt;
+        });
+        myChart.data.datasets[0].data = data.all_cpu.map(function (entry) {
+            return entry.us;
+        });
+        myChart.update();
+    }
 
-  // Create the chart
-  var myChart = new Chart(ctx, {
-    type: "line",
-    data: data
-  });
-});
+    // Function to make AJAX call and update chart data
+    function ajaxCall() {
+        $.ajax({
+            url: 'http://127.0.0.1:5001/refresh_cpu',
+            type: "GET",
+            success: function (data) {
+                // Update chart with live data
+                updateChart(data);
+
+                // Update HTML elements with live data
+                document.getElementById('cpu_us').innerText = data.cpu['us'];
+                document.getElementById('cpu_sy').innerText = data.cpu['sy'];
+                document.getElementById('cpu_ni').innerText = data.cpu['ni'];
+                document.getElementById('cpu_id').innerText = data.cpu['id'];
+                document.getElementById('cpu_wa').innerText = data.cpu['wa'];
+                document.getElementById('cpu_hi').innerText = data.cpu['hi'];
+                document.getElementById('cpu_si').innerText = data.cpu['si'];
+                document.getElementById('cpu_st').innerText = data.cpu['st'];
+            },
+            error: function (error) {
+                console.log("Error", error);
+            }
+        });
+    }
+
+    // Create the chart after DOMContentLoaded
+    document.addEventListener("DOMContentLoaded", function () {
+        // Get the canvas element
+        var ctx = document.getElementById("myChart").getContext("2d");
+        // Create the chart
+        myChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: [{% for entry in all_cpu %} "{{ entry.dt }}", {% endfor %}],
+                datasets: [{
+                    label: "CPU",
+                    data: [{% for entry in all_cpu %} {{ entry.us }}, {% endfor %}],
+                    fill: false,
+                    borderColor: "rgb(75, 192, 192)",
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'User %' // This sets the y-axis label
+                            }
+                        }
+                    }
+                }
+        });
+        // Call ajaxCall function initially to fetch live data
+        ajaxCall();
+        // Call ajax every 10 seconds
+        setInterval(ajaxCall, 10000);
+    });
 </script>
 
-
-
-
-<!-- end CPU graf -->
+    </div>
 </div>
 {% endblock %}

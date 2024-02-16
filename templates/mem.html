@@ -56,7 +56,6 @@ RAM Monitoring
         <!--/row-->
         <!-- MEM graf -->
 <!-- Include Chart.js and jQuery -->
-<!-- Include Chart.js and jQuery -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
@@ -117,12 +116,22 @@ RAM Monitoring
                     borderColor: "rgb(75, 192, 192)",
                     tension: 0.1
                 }]
-            }
+            },
+            options: {
+                scales: {
+                    y: {
+                            title: {
+                                display: true,
+                                text: 'Used MB' // This sets the y-axis label
+                            }
+                        }
+                    }
+                }
         });
         // Call ajaxCall function initially to fetch live data
         ajaxCall();
-        // Call ajax every 5 seconds
-        setInterval(ajaxCall, 60000);
+        // Call ajax every 10 seconds
+        setInterval(ajaxCall, 10000);
     });
 </script>
 
