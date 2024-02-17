@@ -318,10 +318,10 @@ def monitoring(info):
     dt = datetime.now()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    #host = os.getenv('IP_ADDRESS')
-    #username = os.getenv('USERNAME')
-    #password = os.getenv('PASSWORD')
-    ssh.connect('172.16.142.128', username='kali', password='kali')
+    host = os.getenv('IP_ADDRESS')
+    username = os.getenv('USERNAME')
+    password = os.getenv('PASSWORD')
+    ssh.connect(host, username=username, password=password)
     cpu = get_cpu(ssh)
     disk_header, disk = get_disk(ssh)
     mem = get_mem(ssh)
@@ -335,7 +335,7 @@ def monitoring(info):
     add_swap(swap, dt)
     add_cpu(cpu, dt)
     add_proc(proc, dt)
-    
+
     #return dt, cpu, mem, swap, proc, disk_header, disk
     if info == "cpu":
         return cpu
