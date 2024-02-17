@@ -13,6 +13,10 @@ body, html {
 .nav-button {
     color: white;
 }
+h2 {
+    color: #5ccfc1;
+    margin-bottom: 3%";
+}
 
 @media screen and (max-width: 992px) {
 
@@ -100,6 +104,10 @@ body, html {
 
 }
 
+.center {
+  text-align: center;
+}
+
 .page-content {
     min-height: 100%;
     /* Use padding-bottom to push the footer down but ensure it's the same height as the footer */
@@ -119,4 +127,8 @@ footer {
     text-align: center;
     padding: 10px 0; /* Some padding */
     border-radius: 20px 20px 0 0; /* Rounded corners at the top */
+}
+
+.sparkline * {
+  color: white;
 }

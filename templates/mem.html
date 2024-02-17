@@ -60,7 +60,7 @@ RAM Monitoring
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <div class="chart-container">
-    <canvas id="myChart"></canvas>
+    <canvas id="myChart" style=" margin: 5%"></canvas>
 </div>
 
 <script>
@@ -100,39 +100,68 @@ RAM Monitoring
         });
     }
 
-    // Create the chart after DOMContentLoaded
-    document.addEventListener("DOMContentLoaded", function () {
-        // Get the canvas element
-        var ctx = document.getElementById("myChart").getContext("2d");
-        // Create the chart
-        myChart = new Chart(ctx, {
-            type: "line",
-            data: {
-                labels: [{% for entry in all_mem %} "{{ entry.dt }}", {% endfor %}],
-                datasets: [{
-                    label: "RAM",
-                    data: [{% for entry in all_mem %} {{ entry.used }}, {% endfor %}],
-                    fill: false,
-                    borderColor: "rgb(75, 192, 192)",
-                    tension: 0.1
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                            title: {
-                                display: true,
-                                text: 'Used MB' // This sets the y-axis label
-                            }
-                        }
+
+// Create the chart after DOMContentLoaded
+document.addEventListener("DOMContentLoaded", function () {
+    // Get the canvas element
+    var ctx = document.getElementById("myChart").getContext("2d");
+    // Create the chart
+    myChart = new Chart(ctx, {
+        type: "line",
+        data: {
+            labels: [{% for entry in all_mem %} "{{ entry.dt }}", {% endfor %}],
+            datasets: [{
+                label: "RAM",
+                data: [{% for entry in all_mem %} {{ entry.used }}, {% endfor %}],
+                fill: false,
+                borderColor: "rgb(75, 192, 192)",
+                tension: 0.1,
+            }]
+        },
+        options: {
+            plugins: {
+                legend: {
+                    labels: {
+                        color: 'white' // Set legend label color to white
                     }
                 }
-        });
-        // Call ajaxCall function initially to fetch live data
-        ajaxCall();
-        // Call ajax every 10 seconds
-        setInterval(ajaxCall, 10000);
+            },
+            elements: {
+                line: {
+                    borderColor: 'white', // Set line color to white
+                    fill: false,
+                }
+            },
+            scales: {
+                x: {
+                    ticks: {
+                        color: 'white' // Set X-axis tick color to white
+                    },
+                    grid: {
+                        color: "#757575", // Set grid line color to white
+                    }
+                },
+                y: {
+                    ticks: {
+                        color: 'white' // Set Y-axis tick color to white
+                    },
+                    grid: {
+                        color: "#757575", // Set grid line color to white
+                    }
+                }
+            }
+        }
     });
+
+    // Call ajaxCall function initially to fetch live data
+    ajaxCall();
+    // Call ajax every 10 seconds
+    setInterval(ajaxCall, 10000);
+});
+
+
+
+
 </script>
 
 

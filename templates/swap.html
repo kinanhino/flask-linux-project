@@ -63,7 +63,7 @@ SWAP Monitoring
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
 <div class="chart-container">
-    <canvas id="myChart"></canvas>
+    <canvas id="myChart" style=" margin: 5%"></canvas>
 </div>
 
 <script>
@@ -121,15 +121,38 @@ SWAP Monitoring
                 }]
             },
             options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'white' // Set legend label color to white
+                        }
+                    }
+                },
+                elements: {
+                    line: {
+                        borderColor: 'white', // Set line color to white
+                        fill: false,
+                    }
+                },
                 scales: {
+                    x: {
+                        ticks: {
+                            color: 'white' // Set X-axis tick color to white
+                        },
+                        grid: {
+                            color: "#757575", // Set grid line color to white
+                        }
+                    },
                     y: {
-                            title: {
-                                display: true,
-                                text: 'Swap Used MB' // This sets the y-axis label
-                            }
+                        ticks: {
+                            color: 'white' // Set Y-axis tick color to white
+                        },
+                        grid: {
+                            color: "#757575", // Set grid line color to white
                         }
                     }
                 }
+            }
         });
         // Call ajaxCall function initially to fetch live data
         ajaxCall();

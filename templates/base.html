@@ -9,16 +9,24 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
     <!-- Additional head content can go here -->
+    <!-- Bootstrap JS and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+
 </head>
 <body>
 <div class="page-content" style="background-color: #151519">
     <nav class="navbar fixed-top navbar-expand-md navbar-dark nav-dashboard mb-3" style="color: white">
         <div class="flex-row d-flex">
-            <a class="navbar-brand" href="/">Monitor Linux</a>
+            <a class="navbar-brand" style="color: #5ccfc1;" href="/">Monitor Linux</a>
         </div>
+        <!-- Mobile Navigation Bar -->
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
+        <!-- /Mobile Navigation Bar -->
         <div class="collapse navbar-collapse" id="navbarContent">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item nav-button"><a class="nav-link" href="/mem">Memory</a></li>
@@ -30,19 +38,21 @@
         </div>
     </nav>
 
-    <div class="container" style="padding-top: 60px;">
+    <div class="container" style="padding-top: 100px;">
             {% block content %}
-            <h1 class="display-4 d-none d-sm-block">
+            <h1 class="display-4 d-none d-sm-block center" style="color: #5ccfc1;">
                     Linux Monitoring Dashboard
                     </h1>
-            <h2>Welcome to the Linux Monitoring System</h2>
-            <h3>This application demonstrate the usage of you linux machine</h3>
-            <p>You can navigate between each of the metrics to check what the hell is going on with it</p>
+            <h2 class="center">Welcome to the Linux Monitoring System</h2>
+            <h3 class="center" style="color: white;">This application demonstrate the usage of you linux machine</h3>
+            <p class="center" style="color: white;">You can navigate between each of the metrics to check what the hell is going on with it</p>
             {% endblock %}
     </div>
 </div>
     <footer class="container-fluid text-center">
-        <p>©2024 Kaleidoo</p>
+        <p style="color: #5ccfc1;">©2024 Kaleidoo</p>
     </footer>
+
+
 </body>
 </html>
