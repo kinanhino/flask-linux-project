@@ -32,7 +32,7 @@ Processes Monitoring
                     <div class="table-responsive">
                         <table class="table table-striped">
                             <thead class="thead-inverse">
-                                <tr>
+                                <tr style="color: white">
                                     <th>DATE</th>
                                     <th>PID</th>
                                     <th>USER</th>
@@ -45,7 +45,7 @@ Processes Monitoring
 
                             <tbody>
                             {% for p in proc %}
-                                <tr>
+                                <tr style="color: white">
                                     <td>{{p['dt']}}</td>
                                     <td>{{p['PID']}}</td>
                                     <td>{{p['USER']}}</td>

@@ -286,6 +286,22 @@ def show_disk():
     return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
 
 
+@app.route('/refresh_disk')
+def refresh_disk():
+    disk_header, disk = monitoring("disk")
+    print("-----------------------------------------")
+    print(disk)
+    print(disk_header)
+    all_disk = [disk_obj.__dict__ for disk_obj in Disk.query.order_by(Disk.dt.desc()).limit(20).all()]
+    all_disk = all_disk[::-1]
+
+    for disk_data in all_disk:
+        disk_data.pop('_sa_instance_state', None)
+    return jsonify({
+        "all_disk": all_disk
+    })
+
+
 @app.route('/refresh_process')
 def refresh_process():
     proc = monitoring("proc")
