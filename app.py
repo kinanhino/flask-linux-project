@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, render_template, request, redirect
+from flask import Flask, jsonify, render_template
 import paramiko
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -283,11 +283,7 @@ def show_disk():
 @app.route('/refresh_disk')
 def refresh_disk():
     disk_header, disk, dt = monitoring("disk")
-    print("-----------------------------------------")
-    print(disk)
-    print(disk_header)
     all_disk = [disk_obj.__dict__ for disk_obj in Disk.query.where(Disk.dt==dt).all()]
-    print(all_disk)
     for disk_data in all_disk:
         disk_data.pop('_sa_instance_state', None)
     return jsonify({
