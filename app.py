@@ -139,7 +139,6 @@ def get_processes(ssh, date):
         top_data[i] = top_data[i].split()
     proc = []
     for p in top_data:
-        #p = list(str(p).strip())
         d = {
             'PID': p[0],
             'USER': p[1],
@@ -276,13 +275,8 @@ def refresh_swap():
 
 @app.route('/disk')
 def show_disk():
-    disk_header, disk ,dt= monitoring("disk")
+    disk_header, disk, dt = monitoring("disk")
     all_disk = Disk.query.order_by(Disk.dt.desc()).limit(20).all()
-    print(disk_header)
-    print()
-    print(disk)
-    print()
-    print(all_disk)
     return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
 
 
@@ -317,25 +311,26 @@ def monitoring(info):
     dt = datetime.now()
     ssh = paramiko.SSHClient()
     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    #host = os.getenv('IP_ADDRESS')
-    #username = os.getenv('USERNAME')
-    #password = os.getenv('PASSWORD')
-    ssh.connect('172.16.142.128', username='kali', password='kali')
+    host = os.getenv('IP_ADDRESS')
+    username = os.getenv('USERNAME')
+    password = os.getenv('PASSWORD')
+    ssh.connect(host, username=username, password=password)
     cpu = get_cpu(ssh)
     disk_header, disk = get_disk(ssh)
     mem = get_mem(ssh)
     swap = get_swap(ssh)
     proc = get_processes(ssh, dt)
     ssh.close()
-    proc = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 10]
+    proc2 = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 10]
 
+    # if cpu['us'] > 10 or mem['used'] > (mem['total']/2) or swap['used'] > (swap['total']/2):
+    #     pass
     add_disk(disk, dt)
     add_mem(mem, dt)
     add_swap(swap, dt)
     add_cpu(cpu, dt)
-    add_proc(proc, dt)
+    add_proc(proc2, dt)
 
-    #return dt, cpu, mem, swap, proc, disk_header, disk
     if info == "cpu":
         return cpu
     elif info == "mem":

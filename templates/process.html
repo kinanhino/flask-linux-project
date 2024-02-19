@@ -62,7 +62,39 @@ Processes Monitoring
             </div>
             <!--/row-->
 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
+<script>
+$(document).ready(function(){
+    function refreshProcessData() {
+        $.ajax({
+            url: '/refresh_process',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                var rows = '';
+                $.each(data, function(index, p){
+                    rows += '<tr style="color: white">' +
+                            '<td>' + p['dt'] + '</td>' +
+                            '<td>' + p['PID'] + '</td>' +
+                            '<td>' + p['USER'] + '</td>' +
+                            '<td>' + p['%CPU'] + '</td>' +
+                            '<td>' + p['%MEM'] + '</td>' +
+                            '<td>' + p['S'] + '</td>' +
+                            '<td>' + p['COMMAND'] + '</td>' +
+                            '</tr>';
+                });
+                $('table.table tbody').html(rows);
+            },
+            error: function(xhr, status, error) {
+                console.log("Error: " + error);
+            }
+        });
+    }
+
+    setInterval(refreshProcessData, 1000);
+});
+</script>
 
 
 
