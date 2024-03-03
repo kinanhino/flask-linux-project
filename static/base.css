@@ -13,7 +13,7 @@ body, html {
 .nav-button {
     color: white;
 }
-h2 {
+h2,h3,p {
     color: #5ccfc1;
     margin-bottom: 2%";
 }

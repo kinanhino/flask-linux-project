@@ -5,6 +5,8 @@
     <title>{% block head %}
     Monitor Linux
         {% endblock %}</title>
+    {% block custom_css %}
+    {% endblock %}
     <link rel="stylesheet" href="{{ url_for('static', filename='base.css') }}">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js"></script>
@@ -39,14 +41,17 @@
     </nav>
 
     <div class="container" style="padding-top: 100px;">
-            {% block content %}
-            <h1 class="display-4 d-none d-sm-block center" style="color: #5ccfc1;">
-                    Linux Monitoring Dashboard
-                    </h1>
-            <h2 class="center">Welcome to the Linux Monitoring System</h2>
-            <h3 class="center" style="color: white;">This application demonstrate the usage of you linux machine</h3>
-            <p class="center" style="color: white;">You can navigate between each of the metrics to check what the hell is going on with it</p>
-            {% endblock %}
+
+    {% block content %}
+        <h2 class="center">Welcome to the Linux Monitoring System</h2>
+        <h3 class="center">Currently connected to:</h3>
+        <br>
+        <h3 class="center">IP Address: {{ ip_addr }}</h3>
+        <h3 class="center">Username: {{ username }}</h3>
+        <br>
+        <p class="center">This application provides a comprehensive overview of your Linux machine's performance and metrics. Navigate through the dashboard to explore detailed insights and optimize your system's efficiency.</p>
+    {% endblock %}
+
     </div>
 </div>
     <footer class="container-fluid text-center">
