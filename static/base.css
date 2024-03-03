@@ -45,6 +45,10 @@ h2 {
   }
 }
 
+label {
+    color: white !important;
+    float: left;
+}
 /*
  * Off Canvas wider at sm breakpoint
  * --------------------------------------------------

@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request, flash, redirect, url_for
 import paramiko
 import sqlite3
 from flask_sqlalchemy import SQLAlchemy
@@ -10,6 +10,9 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///site.db"
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+app.secret_key="abcdfdfdsfgdfgfdgd"
+db.session.flag = "none"
+
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -23,6 +26,7 @@ class Disk(db.Model):
     Avail = db.Column(db.String(10), nullable=False)
     Use = db.Column(db.String(10), nullable=False)
     Mounted_on = db.Column(db.String(50), nullable=False)
+    mac = db.Column(db.String(50), nullable=False)
 
 
 class Cpu(db.Model):
@@ -36,6 +40,7 @@ class Cpu(db.Model):
     hi = db.Column(db.Float, nullable=False)
     si = db.Column(db.Float, nullable=False)
     st = db.Column(db.Float, nullable=False)
+    mac = db.Column(db.String(50), nullable=False)
 
 
 class Mem(db.Model):
@@ -45,6 +50,7 @@ class Mem(db.Model):
     free = db.Column(db.Float, nullable=False)
     used = db.Column(db.Float, nullable=False)
     cache = db.Column(db.Float, nullable=False)
+    mac = db.Column(db.String(50), nullable=False)
 
 
 class Swap(db.Model):
@@ -54,6 +60,7 @@ class Swap(db.Model):
     free = db.Column(db.Float, nullable=False)
     used = db.Column(db.Float, nullable=False)
     available = db.Column(db.Float, nullable=False)
+    mac = db.Column(db.String(50), nullable=False)
 
 
 class Process(db.Model):
@@ -65,6 +72,7 @@ class Process(db.Model):
     mem = db.Column(db.Float, nullable=False)
     state = db.Column(db.String(5), nullable=False)
     command = db.Column(db.String(50), nullable=False)
+    mac = db.Column(db.String(50), nullable=False)
 
 
 def get_cpu(ssh):
@@ -152,7 +160,7 @@ def get_processes(ssh, date):
     return proc
 
 
-def add_cpu(cpu, date):
+def add_cpu(cpu, date, mac):
     dt = date
     us = cpu["us"]
     sy = cpu["sy"]
@@ -162,34 +170,34 @@ def add_cpu(cpu, date):
     hi = cpu["hi"]
     si = cpu["si"]
     st = cpu["st"]
-    cpu_obj = Cpu(dt=dt, us=us, sy=sy, ni=ni, id=id, wa=wa, hi=hi, si=si, st=st)
+    cpu_obj = Cpu(dt=dt, us=us, sy=sy, ni=ni, id=id, wa=wa, hi=hi, si=si, st=st, mac=mac)
     db.session.add(cpu_obj)
     db.session.commit()
 
 
-def add_mem(mem, date):
+def add_mem(mem, date, mac):
     dt = date
     total = mem["total"]
     free = mem["free"]
     used = mem["used"]
     cache = mem["cache"]
-    mem_obj = Mem(dt=dt, total=total, free=free, used=used, cache=cache)
+    mem_obj = Mem(dt=dt, total=total, free=free, used=used, cache=cache, mac=mac)
     db.session.add(mem_obj)
     db.session.commit()
 
 
-def add_swap(swap, date):
+def add_swap(swap, date, mac):
     dt = date
     total = swap["total"]
     free = swap["free"]
     used = swap["used"]
     available = swap["avail"]
-    swap_obj = Swap(dt=dt, total=total, free=free, used=used, available=available)
+    swap_obj = Swap(dt=dt, total=total, free=free, used=used, available=available, mac=mac)
     db.session.add(swap_obj)
     db.session.commit()
 
 
-def add_proc(proc, date):
+def add_proc(proc, date, mac):
     for p in proc:
         dt = date
         pid = p["PID"]
@@ -198,12 +206,12 @@ def add_proc(proc, date):
         mem = p["%MEM"]
         state = p["S"]
         command = p["COMMAND"]
-        p_obj = Process(dt=dt, pid=pid, user=user, cpu=cpu, mem=mem, state=state, command=command)
+        p_obj = Process(dt=dt, pid=pid, user=user, cpu=cpu, mem=mem, state=state, command=command, mac=mac)
         db.session.add(p_obj)
         db.session.commit()
 
 
-def add_disk(disks, date):
+def add_disk(disks, date, mac):
     dt = date
     for disk in disks:
         Filesystem = disk['Filesystem']
@@ -212,120 +220,151 @@ def add_disk(disks, date):
         Avail = disk["Avail"]
         Use = disk["Use"]
         Mounted_on = disk["Mounted_on"]
-        disk_obj = Disk(dt=dt, Filesystem=Filesystem, Size=Size, Use=Use, Used=Used, Avail=Avail, Mounted_on=Mounted_on)
+        disk_obj = Disk(dt=dt, Filesystem=Filesystem, Size=Size, Use=Use, Used=Used, Avail=Avail, Mounted_on=Mounted_on, mac=mac)
         db.session.add(disk_obj)
     db.session.commit()
 
 
 @app.route('/cpu')
 def show_cpu():
-    cpu = monitoring("cpu")
-    all_cpu = Cpu.query.order_by(Cpu.dt.desc()).limit(20).all()
-    return render_template('cpu.html', cpu=cpu, all_cpu=all_cpu)
+    if db.session.flag=="flex":
+        cpu = monitoring("cpu")
+        all_cpu = Cpu.query.filter(Cpu.mac == db.session.mac).order_by(Cpu.dt.desc()).limit(20).all()
+        return render_template('cpu.html', cpu=cpu, all_cpu=all_cpu)
+    return redirect(url_for('login' ,logged=db.session.flag))
+
 
 @app.route('/refresh_cpu')
 def refresh_cpu():
-    cpu = monitoring("cpu")
-    all_cpu = [cpu_obj.__dict__ for cpu_obj in Cpu.query.order_by(Cpu.dt.desc()).limit(20).all()]
-    all_cpu = all_cpu[::-1]
-    for cpu_data in all_cpu:
-        cpu_data.pop('_sa_instance_state', None)
-    return jsonify({
-        "cpu": cpu,
-        "all_cpu": all_cpu
-    })
+    
+    if db.session.flag=="flex":
+        cpu = monitoring("cpu")
+        all_cpu = [cpu_obj.__dict__ for cpu_obj in Cpu.query.filter(Cpu.mac == db.session.mac).order_by(Cpu.dt.desc()).limit(20).all()]
+        all_cpu = all_cpu[::-1]
+        for cpu_data in all_cpu:
+            cpu_data.pop('_sa_instance_state', None)
+        return jsonify({
+            "cpu": cpu,
+            "all_cpu": all_cpu
+        })
+    return redirect(url_for('login' ,logged=db.session.flag))
+
 
 @app.route('/mem')
 def show_mem():
-    mem = monitoring("mem")
-    all_mem = Mem.query.order_by(Mem.dt.desc()).limit(20).all()
-    return render_template('mem.html', mem=mem, all_mem=all_mem)
+    
+    if db.session.flag == "flex":
+        mem = monitoring("mem")
+        all_mem = Mem.query.filter(Mem.mac == db.session.mac).order_by(Mem.dt.desc()).limit(20).all()
+        return render_template('mem.html', mem=mem, all_mem=all_mem)
+    return redirect(url_for('login' ,logged=db.session.flag))
 
 
 @app.route('/refresh_mem')
 def refresh_mem():
-    mem = monitoring("mem")
-    all_mem = [mem_obj.__dict__ for mem_obj in Mem.query.order_by(Mem.dt.desc()).limit(20).all()]
-    all_mem = all_mem[::-1]
-    for mem_data in all_mem:
-        mem_data.pop('_sa_instance_state', None)
-    return jsonify({
-        "mem": mem,
-        "all_mem": all_mem
-    })
+    
+    if db.session.flag=="flex":
+        mem = monitoring("mem")
+        all_mem = [mem_obj.__dict__ for mem_obj in Mem.query.filter(Mem.mac == db.session.mac).order_by(Mem.dt.desc()).limit(20).all()]
+        all_mem = all_mem[::-1]
+        for mem_data in all_mem:
+            mem_data.pop('_sa_instance_state', None)
+        return jsonify({
+            "mem": mem,
+            "all_mem": all_mem
+        })
+    return redirect(url_for('login' ,logged=db.session.flag))
+
 
 @app.route('/swap')
 def show_swap():
-    swap = monitoring("swap")
-    all_swap = Swap.query.order_by(Swap.dt.desc()).limit(20).all()
-    return render_template('swap.html', swap=swap, all_swap=all_swap)
+    
+    if db.session.flag=="flex":
+        swap = monitoring("swap")
+        all_swap = Swap.query.filter(Swap.mac == db.session.mac).order_by(Swap.dt.desc()).limit(20).all()
+        return render_template('swap.html', swap=swap, all_swap=all_swap)
+    return redirect(url_for('login' ,logged=db.session.flag))
+
 
 @app.route('/refresh_swap')
 def refresh_swap():
-    swap = monitoring("swap")
-    all_swap = [swap_obj.__dict__ for swap_obj in Swap.query.order_by(Swap.dt.desc()).limit(20).all()]
-    all_swap = all_swap[::-1]
-    for swap_data in all_swap:
-        swap_data.pop('_sa_instance_state', None)
-    return jsonify({
-        "swap": swap,
-        "all_swap": all_swap
-    })
+    
+    if db.session.flag=="flex":
+        swap = monitoring("swap")
+        all_swap = [swap_obj.__dict__ for swap_obj in Swap.query.filter(Swap.mac == db.session.mac).order_by(Swap.dt.desc()).limit(20).all()]
+        all_swap = all_swap[::-1]
+        for swap_data in all_swap:
+            swap_data.pop('_sa_instance_state', None)
+        return jsonify({
+            "swap": swap,
+            "all_swap": all_swap
+        })
+    return redirect(url_for('login' ,logged=db.session.flag))
 
 
 @app.route('/disk')
 def show_disk():
-    disk_header, disk, dt = monitoring("disk")
-    all_disk = Disk.query.order_by(Disk.dt.desc()).limit(20).all()
-    return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
+    
+    if db.session.flag=="flex":
+        disk_header, disk, dt = monitoring("disk")
+        all_disk = Disk.query.filter(Disk.mac == db.session.mac).order_by(Disk.dt.desc()).limit(20).all()
+        return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
+    return redirect(url_for('login' ,logged=db.session.flag))
 
 
 @app.route('/refresh_disk')
 def refresh_disk():
-    disk_header, disk, dt = monitoring("disk")
-    all_disk = [disk_obj.__dict__ for disk_obj in Disk.query.where(Disk.dt==dt).all()]
-    for disk_data in all_disk:
-        disk_data.pop('_sa_instance_state', None)
-    return jsonify({
-        "all_disk": all_disk
-    })
+    
+    if db.session.flag=="flex":
+        disk_header, disk, dt = monitoring("disk")
+        all_disk = [disk_obj.__dict__ for disk_obj in Disk.query.filter(Disk.mac == db.session.mac).where(Disk.dt==dt).all()]
+        for disk_data in all_disk:
+            disk_data.pop('_sa_instance_state', None)
+        return jsonify({
+            "all_disk": all_disk
+        })
+    return redirect(url_for('login' ,logged=db.session.flag))
 
 
 @app.route('/refresh_process')
 def refresh_process():
-    proc = monitoring("proc")
-    return jsonify(proc)
+    
+    if db.session.flag=="flex":
+        proc = monitoring("proc")
+        return jsonify(proc)
+    return redirect(url_for('login' ,logged=db.session.flag))
 
 
 @app.route('/process')
 def show_process():
-    proc = monitoring("proc")
-    return render_template('process.html', proc=proc)
+    if db.session.flag=="flex":
+        proc = monitoring("proc")
+        return render_template('process.html', proc=proc)
+    return redirect(url_for('login' ,logged=db.session.flag))
+
+
+def get_mac_address(ssh):
+    stdin, stdout, stderr = ssh.exec_command("ifconfig | grep -o -E '([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}' ")
+    return stdout.read().decode()
 
 
 def monitoring(info):
+    ssh = db.session.ssh
     dt = datetime.now()
-    ssh = paramiko.SSHClient()
-    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    host = os.getenv('IP_ADDRESS')
-    username = os.getenv('USERNAME')
-    password = os.getenv('PASSWORD')
-    ssh.connect(host, username=username, password=password)
     cpu = get_cpu(ssh)
     disk_header, disk = get_disk(ssh)
     mem = get_mem(ssh)
     swap = get_swap(ssh)
     proc = get_processes(ssh, dt)
-    ssh.close()
     proc2 = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 10]
 
     # if cpu['us'] > 10 or mem['used'] > (mem['total']/2) or swap['used'] > (swap['total']/2):
     #     pass
-    add_disk(disk, dt)
-    add_mem(mem, dt)
-    add_swap(swap, dt)
-    add_cpu(cpu, dt)
-    add_proc(proc2, dt)
+    add_disk(disk, dt, mac=db.session.mac)
+    add_mem(mem, dt, mac=db.session.mac)
+    add_swap(swap, dt, mac=db.session.mac)
+    add_cpu(cpu, dt, mac=db.session.mac)
+    add_proc(proc2, dt, mac=db.session.mac)
 
     if info == "cpu":
         return cpu
@@ -338,10 +377,36 @@ def monitoring(info):
     elif info == "proc":
         return proc
 
-@app.route('/')
-def base():
-    return render_template('base.html')
+@app.route('/', methods = ['POST', 'GET'])
+def login():
+    
+    if request.method == 'POST':
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        host = request.form['ip_address']
+        username = request.form['username']
+        password = request.form['password']
+        try:
+            ssh.connect(host, username=username, password=password)
+            db.session.mac = get_mac_address(ssh)
+            db.session.ssh = ssh
+            db.session.flag = "flex"
+        except:
+            flash("Incorrect IP/Username/Password")
+            return render_template('login.html', logged=db.session.flag)
 
+        return render_template('base.html', logged=db.session.flag)
+    if db.session.flag=="flex":
+        return render_template('base.html', logged=db.session.flag)
+    return render_template('login.html', logged=db.session.flag)
+
+
+"""
+@app.route('/base')
+def base():
+    
+    return render_template('base.html', logged=db.session.flag)
+"""
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
