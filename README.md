@@ -28,7 +28,7 @@ The SQLite database (`site.db`) comprises several tables to store different type
 
 ## Functionality
 
-The monitoring system can perform the following tasks:
+The monitoring system perform the following tasks:
 
 1. **Collect System Resource Data**: It fetches CPU, memory, swap, disk, and process data from remote machines via SSH.
 
