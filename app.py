@@ -4,7 +4,7 @@ import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
-
+import socket
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = "sqlite:///site.db"
 db = SQLAlchemy(app)
@@ -409,7 +409,7 @@ def login():
             flash("Incorrect Information")
             flash("Please check your username and password and try again..")
             return render_template('login.html', logged=db.session.flag)
-        except (paramiko.ssh_exception.SSHException, TimeoutError) as e:
+        except (paramiko.ssh_exception.SSHException, TimeoutError, socket.gaierror) as e:
             # print(f"3 {e}")
             flash("Something is wrong")
             flash("Please check your IP and that your machine is running and try again..")
