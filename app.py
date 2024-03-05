@@ -12,9 +12,7 @@ migrate = Migrate(app, db)
 app.secret_key = "abcdfdfdsfgdfgfdgd"
 db.session.flag = "none"
 
-from dotenv import load_dotenv
 
-load_dotenv()
 
 
 class Disk(db.Model):
