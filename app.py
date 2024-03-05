@@ -364,7 +364,7 @@ def monitoring(info):
     swap = get_swap(ssh)
     proc = get_processes(ssh, dt)
     proc2 = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 10]
-
+    proc = [p for p in proc if float(p['%CPU']) > 0 or float(p["%MEM"]) > 0]
     # if cpu['us'] > 10 or mem['used'] > (mem['total']/2) or swap['used'] > (swap['total']/2):
     #     pass
     add_disk(disk, dt, mac=db.session.mac)
