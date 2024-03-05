@@ -42,7 +42,7 @@ The monitoring system perform the following tasks:
 
 2. **Dashboard**: After logging in, users can view real-time system resource usage statistics such as CPU, memory, swap, disk, and processes.
 
-3. **Refresh Data**: Automatically refresh the displayed data to see the most recent information without reloading the page.
+3. **Refresh Data**: Automatically refresh the displayed data every 10 seconds to see the most recent information without reloading the page.
 
 4. **Navigation**: Users can navigate between different resource views using the navigation links provided in the web interface.
 
