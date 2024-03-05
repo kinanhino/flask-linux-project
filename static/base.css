@@ -136,3 +136,14 @@ footer {
 .sparkline * {
   color: white;
 }
+
+.image-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+}
+
+.image-size {
+    width: 400px;
+    height: 400px;
+}
