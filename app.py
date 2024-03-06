@@ -3,7 +3,7 @@ import paramiko
 from flask_migrate import Migrate
 import socket
 from models import *
-from main_function import monitoring
+from monitoring import monitoring
 from get_functions import get_mac_address
 
 app = Flask(__name__)
@@ -20,7 +20,7 @@ def show_cpu():
         cpu = monitoring("cpu")
         all_cpu = Cpu.query.filter(Cpu.mac == db.session.mac).order_by(Cpu.dt.desc()).limit(20).all()
         return render_template('cpu.html', cpu=cpu, all_cpu=all_cpu)
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -37,7 +37,7 @@ def refresh_cpu():
             "cpu": cpu,
             "all_cpu": all_cpu
         })
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -47,7 +47,7 @@ def show_mem():
         mem = monitoring("mem")
         all_mem = Mem.query.filter(Mem.mac == db.session.mac).order_by(Mem.dt.desc()).limit(20).all()
         return render_template('mem.html', mem=mem, all_mem=all_mem)
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -64,7 +64,7 @@ def refresh_mem():
             "mem": mem,
             "all_mem": all_mem
         })
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -74,7 +74,7 @@ def show_swap():
         swap = monitoring("swap")
         all_swap = Swap.query.filter(Swap.mac == db.session.mac).order_by(Swap.dt.desc()).limit(20).all()
         return render_template('swap.html', swap=swap, all_swap=all_swap)
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -91,7 +91,7 @@ def refresh_swap():
             "swap": swap,
             "all_swap": all_swap
         })
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -101,7 +101,7 @@ def show_disk():
         disk_header, disk, dt = monitoring("disk")
         all_disk = Disk.query.filter(Disk.mac == db.session.mac).order_by(Disk.dt.desc()).limit(20).all()
         return render_template('disk.html', disk=disk, disk_header=disk_header, all_disk=all_disk)
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -116,7 +116,7 @@ def refresh_disk():
         return jsonify({
             "all_disk": all_disk
         })
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -125,7 +125,7 @@ def refresh_process():
     if db.session.flag == "flex":
         proc = monitoring("proc")
         return jsonify(proc)
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
@@ -134,7 +134,7 @@ def show_process():
     if db.session.flag == "flex":
         proc = monitoring("proc")
         return render_template('process.html', proc=proc)
-    flash("You must be logged first")
+    flash("you must be connected first")
     return redirect(url_for('login', logged=db.session.flag))
 
 
