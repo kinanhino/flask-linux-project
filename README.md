@@ -54,6 +54,18 @@ To deploy the monitoring system:
 2. Run the Flask application using `python app.py`.
 3. Access the application via a web browser at the specified port (default is `http://localhost:5001`).
 
+## Database Initialization and Migration
+
+Before running the application for the first time, you need to initialize the database and perform any necessary migrations. Follow these steps:
+
+1. Ensure that you have the required permissions and access to the SQLite database (site.db) file.
+2. Open a terminal or command prompt.
+3. Navigate to the project directory.
+4. Run the following commands to initialize the database and perform migrations:
+   flask db init
+   flask db migrate
+   flask db upgrade
+   
 ## Notes
 
 - Make sure SSH is enabled on the target machines and the necessary permissions are granted for remote access.
