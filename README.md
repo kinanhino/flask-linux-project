@@ -62,9 +62,9 @@ Before running the application for the first time, you need to initialize the da
 2. Open a terminal or command prompt.
 3. Navigate to the project directory.
 4. Run the following commands to initialize the database and perform migrations:
-   flask db init
-   flask db migrate
-   flask db upgrade
+   1. flask db init
+   2. flask db migrate
+   3. flask db upgrade
    
 ## Notes
 
